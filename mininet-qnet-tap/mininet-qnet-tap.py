@@ -1,4 +1,6 @@
 #!/usr/bin/python
+from mininet.node import CPULimitedHost
+from mininet.link import TCLink
 import traceback
 from mininet_common import sshd, checkIntf
 from mininet.log import setLogLevel, info
@@ -23,7 +25,21 @@ host = sys.argv[3]
 setLogLevel('info')
 
 host_config=config['hosts'][host]
+class MultiSwitch( OVSSwitch ):
+    "Custom Switch() subclass that connects to different controllers"
+    def start( self, controllers ):
+        return OVSSwitch.start( self, [ cmap[ self.name ] ])
+
+to_kill = []
+net = Mininet( switch=MultiSwitch, build=False,
+	           host=CPULimitedHost, link=TCLink )
 try:
+    hosts = {}
+    for h in host_config['vhosts']:
+         host_ip = h['ip']+'/24'
+         host_mac = h['mac']
+         host_name = h['name']
+         hosts[host_name] = net.addHost(host_name,ip=host_ip, mac=host_mac)
     controllers={}
     controllers_to_add = list()
     for c in host_config['controllers']:
@@ -37,9 +53,7 @@ try:
         else:
             c0 = RemoteController( controller_name, ip=controller_ip, port=controller_port )
         controllers[controller_name]=c0
-
     devices = host_config['phys']
-    to_kill = []
     for task in sorted(host_config['pre-scripts'], key=lambda x: x['prio']):
         if task['type'] == 'device':
              devices.append(task)
@@ -50,23 +64,15 @@ try:
         else:
             call(task['cmdline'].format(**task), shell=True)
         to_kill.append(task)
-    time.sleep(5)
-             
-
-
+    time.sleep(1)
     for device in devices:
-        checkIntf(device['device'])
+        info( '*** Checking', device['device'], '\n' )
+        #checkIntf(device['device'])
     cmap={}
     for switch_data in host_config['switches']:
          switch_name = switch_data['name']
          switch_controller_name = switch_data['controller']['name']
          cmap[switch_name]=controllers[switch_controller_name]
-    class MultiSwitch( OVSSwitch ):
-        "Custom Switch() subclass that connects to different controllers"
-        def start( self, controllers ):
-            return OVSSwitch.start( self, [ cmap[ self.name ] ])
-
-    net = Mininet( switch=MultiSwitch, build=False)
 
     for c in controllers_to_add:
         net.addController(c)
@@ -74,26 +80,40 @@ try:
     switches = {}
     for  s in host_config['switches']:
         switches[s['name']]=net.addSwitch(s['name'])
-    hosts = {}
-    for h in host_config['vhosts']:
-         host_ip = h['ip']
-         host_mac = h['mac']
-         host_name = h['name']
-         hosts[host_name] = net.addHost(host_name,ip=host_ip, mac=host_mac)
           
 
-    for n1,n2 in host_config['links']:
+    for n1,n2,sp,de in host_config['links']:
         if n1['type']=='switch' and n2['type']=='device':
              intfName = n2['device']
-             checkIntf(intfName)
-
-             _intf = Intf(intfName, switches[n1['name']])
+             #checkIntf(intfName)
+             if isinstance(n2['vhost'], dict):
+                 info( '*** Linking', n2['vhost']['name'],n1['name'],intfName, '\n' )
+                 net.addLink(n2['vhost']['name'],n1['name'],intfName1=intfName+'lb', bw=sp, delay=de)
+                 hosts[n2['vhost']['name']].cmd('brctl addbr brvh&&brctl addif brvh '+intfName+'&&brctl addif brvh '+intfName+'lb'+'&&ifconfig brvh up')
+             else:
+                 _intf = Intf(intfName, switches[n1['name']])
         elif n2['type']=='switch' and n1['type']=='device':
              intfName = n1['device']
-             checkIntf(intfName)
-             _intf = Intf(intfName, switches[n2['name']])
+             #checkIntf(intfName)
+             if isinstance(n1['vhost'], dict):
+                 info( '*** Linking', n1['vhost']['name'],n2['name'],intfName, '\n' )
+                 net.addLink(n1['vhost']['name'],n2['name'],intfName1=intfName+'lb', bw=sp, delay=de)
+                 hosts[n1['vhost']['name']].cmd('brctl addbr brvh&&brctl addif brvh '+intfName+'&&brctl addif brvh '+intfName+'lb'+'&&ifconfig brvh up')
+             else:
+                 _intf = Intf(intfName, switches[n2['name']])
+        elif n1['type']=='vhost' and n2['type']=='switch':
+             net.addLink(n1['name'],n2['name'], bw=sp, delay=de)
+             if isinstance(n1['sw2'], dict):
+                 net.addLink(n1['name'], n1['sw2']['name'], intfName1=n1['name']+n1['sw2']['name']+'-2', bw=sp, delay=de)
+                 hosts[n1['name']].cmd('ifconfig '+n1['name']+n1['sw2']['name']+'-2'+' '+n1['ip2']+' netmask 255.255.255.0')             
+        elif n2['type']=='vhost' and n1['type']=='switch':
+             net.addLink(n1['name'],n2['name'], bw=sp, delay=de)
+             if isinstance(n2['sw2'], dict):
+                 net.addLink(n2['sw2']['name'],n2['name'],intfName2=n2['name']+n2['sw2']['name']+'-2', bw=sp, delay=de)
+                 hosts[n2['name']].cmd('ifconfig '+n2['name']+n2['sw2']['name']+'-2'+' '+n2['ip2']+' netmask 255.255.255.0')                          
         else:
-             net.addLink(n1['name'],n2['name'])
+             info( '*** Linking', n1['name'],n2['name'], '\n' )
+             net.addLink(n1['name'],n2['name'], bw=sp, delay=de)
     if 'ssh' in host_config: 
         for instance in host_config['ssh']:
             print instance

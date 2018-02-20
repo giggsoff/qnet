@@ -5,6 +5,8 @@ defaults:
       type: vhost
       ip: None
       mac: None
+      sw2: None
+      ip2: None
   switches:
     - &switch
       name: default
@@ -88,9 +90,9 @@ defaults:
       kw_port: None
       kw_ip: 127.0.0.1
       management_port: None
-      key_reuse: 10
+      key_reuse: 100
       vhost: None
-      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/ctapudp/ctapudp -s {bind_ip} -p {bind_port} -t {ip} -k {port} -q {kw_ip} -r {kw_port} -i {device} -e {key_reuse} -a 1
+      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/nextctapudp/ctapudp -s {bind_ip} -p {bind_port} -t {ip} -b {ip2} -k {port} -q {kw_ip} -r {kw_port} -i {device} -e {key_reuse} -a 1 -d 1 
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
     - &ctapudp-client
       <<: *service
@@ -105,9 +107,9 @@ defaults:
       kw_port: None
       kw_ip: 127.0.0.1
       management_port: None
-      key_reuse: 10
+      key_reuse: 100
       vhost: None
-      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/ctapudp/ctapudp -c {bind_ip} -p {bind_port} -t {ip} -k {port} -q {kw_ip} -r {kw_port} -i {device} -e {key_reuse} -a 1
+      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/nextctapudp/ctapudp -c {bind_ip} -p {bind_port} -t {ip} -b {ip2} -k {port} -q {kw_ip} -r {kw_port} -i {device} -e {key_reuse} -a 1 -d 1
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
 
     - &ctapudpraw-server
@@ -124,7 +126,7 @@ defaults:
       kw_ip: 127.0.0.1
       management_port: None
       vhost: None
-      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/ctapudp/ctapudp -s {bind_ip} -p {bind_port} -t {ip} -k {port} -q {kw_ip} -r {kw_port} -i {device} -a 1
+      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/nextctapudp/ctapudp -s {bind_ip} -p {bind_port} -t {ip} -k {port} -q {kw_ip} -r {kw_port} -i {device} -a 1  
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
     - &ctapudpraw-client
       <<: *service
@@ -140,7 +142,7 @@ defaults:
       kw_ip: 127.0.0.1
       management_port: None
       vhost: None
-      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/ctapudp/ctapudp -c {bind_ip} -p {bind_port} -t {ip} -k {port} -q {kw_ip} -r {kw_port} -i {device} -a 1
+      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/nextctapudp/ctapudp -c {bind_ip} -p {bind_port} -t {ip} -k {port} -q {kw_ip} -r {kw_port} -i {device} -a 1  
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
 
 

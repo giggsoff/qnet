@@ -7,17 +7,7 @@ hosts:
         <<: *controller
         name: c0
         port: 6634
-    vhosts:
-      - &in
-        <<: *vhost
-        name: in
-        ip: 10.0.0.1/24
-        mac: 00:00:00:00:00:01
-      - &out
-        <<: *vhost
-        name: out
-        ip: 10.0.0.2/24
-        mac: 00:00:00:00:00:02
+
     switches:
       - &s1
         <<: *switch
@@ -27,21 +17,59 @@ hosts:
         <<: *switch
         name: s2
         controller: *c0
+      - &s11
+        <<: *switch
+        name: s11
+        controller: *c0
+      - &s12
+        <<: *switch
+        name: s12
+        controller: *c0
+
+    vhosts:
+      - &in
+        <<: *vhost
+        name: in
+        ip: 10.0.0.1
+        mac: 00:00:00:00:00:01
+      - &out
+        <<: *vhost
+        name: out
+        ip: 10.0.0.2
+        mac: 00:00:00:00:00:02
+      - &vh1
+        <<: *vhost
+        name: vh1
+        ip: &vh11ip 10.0.1.1
+        sw2: *s12
+        ip2: &vh12ip 10.0.2.1
+        mac: 00:00:00:00:00:03
+      - &vh2
+        <<: *vhost
+        name: vh2
+        ip: &vh21ip 10.0.1.2
+        sw2: *s12
+        ip2: &vh22ip 10.0.2.2
+        mac: 00:00:00:00:00:04
 
     pre-scripts:
       - &kw1
         <<: *keyworker
+        vhost: *vh1
         name: kw1
         port: &kw1_port 55550
 
       - &kw2
         <<: *keyworker
+        vhost: *vh2
         name: kw2
         port: &kw2_port 55551
 
       - &ctap1
         <<: *ctapudp-server
-        ip: 127.0.0.1
+        vhost: *vh1
+        ip: *vh21ip
+        ip2: *vh22ip
         port: &n2-ctap-port 1000
         name: ct1
         device: tap0
@@ -53,9 +81,11 @@ hosts:
         management_port: 11110
       - &ctap2
         <<: *ctapudp-client
+        vhost: *vh2
         device: tap1
         name: ct2
-        ip: 127.0.0.1
+        ip: *vh11ip
+        ip2: *vh12ip
         port: *n1-ctap-port
         bind_ip: 0.0.0.0
         bind_port: *n2-ctap-port
@@ -73,8 +103,10 @@ hosts:
 
 
     links:
-      - [*in, *s1]
-      - [*s1, *ctap1]
-      - [*ctap2, *s2]
-      - [*s2, *out]
+      - [*vh1, *s11, 10, '1ms']
+      - [*s11, *vh2, 10, '1ms']
+      - [*in, *s1, 100, '1ms']
+      - [*s1, *ctap1, 100, '1ms']
+      - [*ctap2, *s2, 100, '1ms']
+      - [*s2, *out, 100, '1ms']
  

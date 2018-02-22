@@ -77,7 +77,6 @@ hosts:
         bind_port: &n1-ctap-port 1001
         kw_ip: 127.0.0.1
         kw_port: *kw1_port
-        key_reuse: &kr 10
         management_port: 11110
       - &ctap2
         <<: *ctapudp-client
@@ -91,7 +90,6 @@ hosts:
         bind_port: *n2-ctap-port
         kw_ip: 127.0.0.1
         kw_port: *kw2_port
-        key_reuse: *kr
         management_port: 11111
     post-scripts: 
       - &httpd-out
@@ -103,10 +101,10 @@ hosts:
 
 
     links:
-      - [*vh1, *s11, 10, '1ms']
-      - [*s11, *vh2, 10, '1ms']
-      - [*in, *s1, 100, '1ms']
-      - [*s1, *ctap1, 100, '1ms']
-      - [*ctap2, *s2, 100, '1ms']
-      - [*s2, *out, 100, '1ms']
+      - [*vh1, *s11, 50, '4ms', 0]
+      - [*s11, *vh2, 50, '0ms', 0]
+      - [*in, *s1, 1000, '1ms', 0]
+      - [*s1, *ctap1, 1000, '1ms', 0]
+      - [*ctap2, *s2, 1000, '1ms', 0]
+      - [*s2, *out, 1000, '1ms', 0]
  

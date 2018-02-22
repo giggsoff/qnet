@@ -82,13 +82,13 @@ try:
         switches[s['name']]=net.addSwitch(s['name'])
           
 
-    for n1,n2,sp,de in host_config['links']:
+    for n1,n2,sp,de,loss in host_config['links']:
         if n1['type']=='switch' and n2['type']=='device':
              intfName = n2['device']
              #checkIntf(intfName)
              if isinstance(n2['vhost'], dict):
                  info( '*** Linking', n2['vhost']['name'],n1['name'],intfName, '\n' )
-                 net.addLink(n2['vhost']['name'],n1['name'],intfName1=intfName+'lb', bw=sp, delay=de)
+                 net.addLink(n2['vhost']['name'],n1['name'],intfName1=intfName+'lb', bw=sp, delay=de, loss=loss, use_htb=True)
                  hosts[n2['vhost']['name']].cmd('brctl addbr brvh&&brctl addif brvh '+intfName+'&&brctl addif brvh '+intfName+'lb'+'&&ifconfig brvh up')
              else:
                  _intf = Intf(intfName, switches[n1['name']])
@@ -97,23 +97,23 @@ try:
              #checkIntf(intfName)
              if isinstance(n1['vhost'], dict):
                  info( '*** Linking', n1['vhost']['name'],n2['name'],intfName, '\n' )
-                 net.addLink(n1['vhost']['name'],n2['name'],intfName1=intfName+'lb', bw=sp, delay=de)
+                 net.addLink(n1['vhost']['name'],n2['name'],intfName1=intfName+'lb', bw=sp, delay=de, loss=loss, use_htb=True)
                  hosts[n1['vhost']['name']].cmd('brctl addbr brvh&&brctl addif brvh '+intfName+'&&brctl addif brvh '+intfName+'lb'+'&&ifconfig brvh up')
              else:
                  _intf = Intf(intfName, switches[n2['name']])
         elif n1['type']=='vhost' and n2['type']=='switch':
-             net.addLink(n1['name'],n2['name'], bw=sp, delay=de)
+             net.addLink(n1['name'],n2['name'], bw=sp, delay=de, loss=loss, use_htb=True)
              if isinstance(n1['sw2'], dict):
-                 net.addLink(n1['name'], n1['sw2']['name'], intfName1=n1['name']+n1['sw2']['name']+'-2', bw=sp, delay=de)
+                 net.addLink(n1['name'], n1['sw2']['name'], intfName1=n1['name']+n1['sw2']['name']+'-2', bw=sp, delay=de, loss=loss, use_htb=True)
                  hosts[n1['name']].cmd('ifconfig '+n1['name']+n1['sw2']['name']+'-2'+' '+n1['ip2']+' netmask 255.255.255.0')             
         elif n2['type']=='vhost' and n1['type']=='switch':
-             net.addLink(n1['name'],n2['name'], bw=sp, delay=de)
+             net.addLink(n1['name'],n2['name'], bw=sp, delay=de, loss=loss, use_htb=True)
              if isinstance(n2['sw2'], dict):
-                 net.addLink(n2['sw2']['name'],n2['name'],intfName2=n2['name']+n2['sw2']['name']+'-2', bw=sp, delay=de)
+                 net.addLink(n2['sw2']['name'],n2['name'],intfName2=n2['name']+n2['sw2']['name']+'-2', bw=sp, delay=de, loss=loss, use_htb=True)
                  hosts[n2['name']].cmd('ifconfig '+n2['name']+n2['sw2']['name']+'-2'+' '+n2['ip2']+' netmask 255.255.255.0')                          
         else:
              info( '*** Linking', n1['name'],n2['name'], '\n' )
-             net.addLink(n1['name'],n2['name'], bw=sp, delay=de)
+             net.addLink(n1['name'],n2['name'], bw=sp, delay=de, loss=loss, use_htb=True)
     if 'ssh' in host_config: 
         for instance in host_config['ssh']:
             print instance
@@ -132,7 +132,7 @@ try:
         else:
             call(task['cmdline'].format(**task), shell=True)
         to_kill.append(task)
-    time.sleep(5)
+    time.sleep(1)
     CLI(net)
 except:
     traceback.print_exc(file=sys.stdout)

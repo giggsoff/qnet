@@ -88,7 +88,7 @@ hosts:
         vhost: *vh2
         device: tap1
         name: ct2
-        ip: *vh11ip
+        ip: *vhwrong11ip
         ip2: *vh12ip
         port: *n1-ctap-port
         bind_ip: 0.0.0.0

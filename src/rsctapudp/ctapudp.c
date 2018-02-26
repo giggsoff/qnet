@@ -1180,7 +1180,11 @@ int main(int argc, char **argv) {
         }
         if (FD_ISSET(sock, &rfds)) {
             if (rs) {
+loop1:
                 cnt = recvfrom(sock, &buf, buffer_bytes + sizeof (uint8_t), 0, &from.a, &slen);
+                if (cnt < buffer_bytes) {
+                    continue;
+                }
             } else {
                 cnt = recvfrom(sock, &buf, 2000, 0, &from.a, &slen);
                 do_debug("NET2TAP: received %d bytes\n", cnt);
@@ -1314,14 +1318,17 @@ int main(int argc, char **argv) {
                             curnum_recv += recovery_count + original_count;
                         }
                         if (decodeResult != Leopard_Success) {
+                            goto loop1;
                             continue;
                         }
                     } else {
+                        goto loop1;
                         continue;
                     }
                 }
                 if (aes) {
                     if (cnt < 32 + 16) {
+                        goto loop1;
                         continue;
                     }
                     bool toexit = false;
@@ -1363,6 +1370,9 @@ int main(int argc, char **argv) {
                         }
                     }
                     if (toexit) {
+                        if (rs) {
+                            goto loop1;
+                        }
                         continue;
                     }
                     if (keychanged) {
@@ -1411,6 +1421,9 @@ int main(int argc, char **argv) {
                     cnt = ziplength;
                 }
                 write(dev, (void*) &(*(buf + sizeof (PHEADER))), cnt);
+                if (rs) {
+                    goto loop1;
+                }
             }
         }
     }

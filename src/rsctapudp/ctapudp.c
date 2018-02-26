@@ -61,7 +61,7 @@ int curnum_recv_drop = 0;
 int curnum_send = 0;
 
 unsigned original_count = 9;
-unsigned recovery_count = 3;
+unsigned recovery_count = 4;
 size_t buffer_bytes = 192;
 unsigned encode_work_count = 0;
 unsigned decode_work_count = 0;
@@ -1118,7 +1118,7 @@ int main(int argc, char **argv) {
                         leopard::SIMDSafeFree(original_data_send[i]);
                         original_data_send[i] = nullptr;
                     }
-                    if (curnum_send > 200 - recovery_count - original_count) {
+                    if (curnum_send > 10*(recovery_count + original_count)) {
                         curnum_send = 0;
                     } else {
                         curnum_send += recovery_count + original_count;
@@ -1181,7 +1181,7 @@ int main(int argc, char **argv) {
         if (FD_ISSET(sock, &rfds)) {
             if (rs) {
 loop1:
-                cnt = recvfrom(sock, &buf, buffer_bytes + sizeof (uint8_t), 0, &from.a, &slen);
+                cnt = recvfrom(sock, &buf, buffer_bytes + sizeof (uint8_t), MSG_WAITALL, &from.a, &slen);
                 if (cnt < buffer_bytes) {
                     continue;
                 }
@@ -1231,10 +1231,14 @@ loop1:
                     uint8_t curind = 0;
                     memcpy(&curind, bufp, sizeof (uint8_t));
                     do_debug("RECV #%d %d\n", curind, curnum_recv);
-                    if ((curcount == 0 || curnum_recv_drop > original_count) && (curnum_recv == 0 || curnum_recv != (curind - (curind % (recovery_count + original_count))))) {
-                        if (curind <= 196) {
-                            curnum_recv = curind - (curind % (recovery_count + original_count)) + recovery_count + original_count;
-                            curnum_recv_drop = 0;
+                    if ((curcount == 0 || curnum_recv_drop > recovery_count+2) && (curnum_recv == 0 || curnum_recv != (curind - (curind % (recovery_count + original_count))))) {
+                        if (curind < 10*(recovery_count + original_count)) {
+			    if(curind > recovery_count){
+                            	curnum_recv = curind - (curind % (recovery_count + original_count)) + recovery_count + original_count;
+                            }else{
+				curnum_recv = 0;
+			    }
+			    curnum_recv_drop = 0;
                             curcount = 0;
                             for (unsigned i = 0, count = original_count; i < count; ++i) {
                                 leopard::SIMDSafeFree(original_data_recv[i]);
@@ -1244,11 +1248,14 @@ loop1:
                                 leopard::SIMDSafeFree(encode_work_data_recv[i]);
                                 encode_work_data_recv[i] = nullptr;
                             }
+			    printf("FREE\n");
                         }
+			    printf("STRANGE\n");
                     } else {
                         if (curnum_recv != curind - (curind % (recovery_count + original_count))) {
                             curnum_recv_drop++;
-                            continue;
+			    printf("DROP\n");
+			    continue;
                         }
                     }
                     curind = curind % (recovery_count + original_count);
@@ -1312,23 +1319,22 @@ loop1:
                             decode_work_data[i] = nullptr;
                         }
                         cnt = cnt16;
-                        if (curnum_recv > 200 - recovery_count - original_count) {
+                        if (curnum_recv > 10*(recovery_count + original_count)) {
                             curnum_recv = 0;
+			    printf("TO 0\n");
                         } else {
-                            curnum_recv += recovery_count + original_count;
+                        curnum_recv += recovery_count + original_count;
                         }
                         if (decodeResult != Leopard_Success) {
-                            goto loop1;
                             continue;
                         }
                     } else {
-                        goto loop1;
-                        continue;
+//                        goto loop1;
+			continue;
                     }
                 }
                 if (aes) {
                     if (cnt < 32 + 16) {
-                        goto loop1;
                         continue;
                     }
                     bool toexit = false;
@@ -1371,7 +1377,6 @@ loop1:
                     }
                     if (toexit) {
                         if (rs) {
-                            goto loop1;
                         }
                         continue;
                     }
@@ -1422,7 +1427,7 @@ loop1:
                 }
                 write(dev, (void*) &(*(buf + sizeof (PHEADER))), cnt);
                 if (rs) {
-                    goto loop1;
+                    //goto loop1;
                 }
             }
         }

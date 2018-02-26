@@ -1,0 +1,150 @@
+hosts:
+  h1: 
+    ip: &h1_ip 192.168.122.243
+    phys: []
+    controllers:
+      - &c0
+        <<: *controller
+        name: c0
+        port: 6634
+
+    switches:
+      - &s1
+        <<: *switch
+        name: s1
+        controller: *c0
+      - &s2
+        <<: *switch
+        name: s2
+        controller: *c0
+      - &s11
+        <<: *switch
+        name: s11
+        controller: *c0
+      - &s12
+        <<: *switch
+        name: s12
+        controller: *c0
+      - &s21
+        <<: *switch
+        name: s21
+        controller: *c0
+      - &st
+        <<: *switch
+        name: st
+        controller: *c0
+
+    vhosts:
+      - &in
+        <<: *vhost
+        name: in
+        ip: 10.0.0.1
+        mac: 00:00:00:00:00:01
+      - &out
+        <<: *vhost
+        name: out
+        ip: 10.0.0.2
+        mac: 00:00:00:00:00:02
+      - &vhwrong
+        <<: *vhost
+        name: vhwrong
+        ip: &vhwrong11ip 10.0.1.3
+        mac: 00:00:00:00:00:05
+      - &vh1
+        <<: *vhost
+        name: vh1
+        ip: &vh11ip 10.0.1.1
+        mac: 00:00:00:00:00:03
+      - &vh2
+        <<: *vhost
+        name: vh2
+        ip: &vh21ip 10.0.1.2
+        mac: 00:00:00:00:00:04
+      - &vht1
+        <<: *vhost
+        name: vht1
+        ip: &vht1ip 10.0.1.2
+        mac: 00:00:00:00:00:04
+      - &vht2
+        <<: *vhost
+        name: vht2
+        ip: &vht2ip 10.0.1.2
+        mac: 00:00:00:00:00:04
+
+    pre-scripts:
+      - &kw1
+        <<: *keyworker
+        vhost: *vh1
+        name: kw1
+        port: &kw1_port 55550
+
+      - &kw2
+        <<: *keyworker
+        vhost: *vh2
+        name: kw2
+        port: &kw2_port 55551
+
+      - &ctap1
+        <<: *ctapudp-server
+        vhost: *vh1
+        ip: *vh21ip
+        port: &n2-ctap-port 1000
+        name: ct1
+        device: tap0
+        bind_ip: 0.0.0.0
+        bind_port: &n1-ctap-port 1001
+        kw_ip: 127.0.0.1
+        kw_port: *kw1_port
+        management_port: 11110
+      - &ctap2
+        <<: *ctapudp-client
+        vhost: *vh2
+        device: tap1
+        name: ct2
+        ip: *vh11ip
+        port: *n1-ctap-port
+        bind_ip: 0.0.0.0
+        bind_port: *n2-ctap-port
+        kw_ip: 127.0.0.1
+        kw_port: *kw2_port
+        management_port: 11111
+      - &tuny1
+        <<: *tiny-server
+        vhost: *vht1
+        device: tiny1
+        name: tt1
+        ip: *vht1ip
+        bind_ip: 0.0.0.0
+        subnet: 10.22.22.0
+        bind_port: &t1-tiny-port 4096
+      - &tiny2
+        <<: *tiny-client
+        vhost: *vht2
+        device: tiny2
+        name: tt2
+        ip: *vht2ip
+        bind_port: *t1-tiny-port
+        subnet: 10.22.22.0
+        bind_ip: *vht1ip
+    post-scripts: 
+      - &httpd-out
+        <<: *httpd
+        name: httpd-out
+        path: /root/qnet/mininet-qnet-tap/data
+        vhost: *out
+        port: 8000
+
+
+    links:
+      - [*vhwrong, *s11, 100, '0ms', 0]
+      - [*vh1, *s11, 10, '4ms', 0]
+      - [*vht1, *st, 10, '4ms', 0]
+      - [*vht2, *st, 10, '4ms', 0]
+      - [*s21, *vh2, 10, '0ms', 0]
+      - [*in, *s1, 1000, '1ms', 0]
+      - [*s1, *ctap1, 1000, '1ms', 0]
+      - [*ctap2, *s2, 1000, '1ms', 0]
+      - [*s11, *vht1, 1000, '1ms', 0]
+      - [*vht2, *s21, 1000, '1ms', 0]
+      - [*s2, *out, 1000, '1ms', 0]
+ 

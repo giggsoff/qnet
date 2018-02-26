@@ -60,8 +60,8 @@ int curnum_recv = 0;
 int curnum_recv_drop = 0;
 int curnum_send = 0;
 
-unsigned original_count = 10;
-unsigned recovery_count = 4;
+unsigned original_count = 9;
+unsigned recovery_count = 3;
 size_t buffer_bytes = 192;
 unsigned encode_work_count = 0;
 unsigned decode_work_count = 0;
@@ -1233,11 +1233,11 @@ int main(int argc, char **argv) {
                             curnum_recv_drop = 0;
                             curcount = 0;
                             for (unsigned i = 0, count = original_count; i < count; ++i) {
-                                //leopard::SIMDSafeFree(original_data_recv[i]);
+                                leopard::SIMDSafeFree(original_data_recv[i]);
                                 original_data_recv[i] = nullptr;
                             }
                             for (unsigned i = 0, count = recovery_count; i < count; ++i) {
-                                //leopard::SIMDSafeFree(encode_work_data_recv[i]);
+                                leopard::SIMDSafeFree(encode_work_data_recv[i]);
                                 encode_work_data_recv[i] = nullptr;
                             }
                         }

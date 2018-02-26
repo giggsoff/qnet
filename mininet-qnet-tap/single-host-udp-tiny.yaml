@@ -29,9 +29,9 @@ hosts:
         <<: *switch
         name: s21
         controller: *c0
-      - &st
+      - &s3
         <<: *switch
-        name: st
+        name: s3
         controller: *c0
 
     vhosts:
@@ -63,13 +63,13 @@ hosts:
       - &vht1
         <<: *vhost
         name: vht1
-        ip: &vht1ip 10.0.1.2
-        mac: 00:00:00:00:00:04
+        ip: &vht1ip 10.22.0.1
+        mac: 00:00:00:00:00:06
       - &vht2
         <<: *vhost
         name: vht2
-        ip: &vht2ip 10.0.1.2
-        mac: 00:00:00:00:00:04
+        ip: &vht2ip 10.22.0.2
+        mac: 00:00:00:00:00:07
 
     pre-scripts:
       - &kw1
@@ -138,8 +138,8 @@ hosts:
     links:
       - [*vhwrong, *s11, 100, '0ms', 0]
       - [*vh1, *s11, 10, '4ms', 0]
-      - [*vht1, *st, 10, '4ms', 0]
-      - [*vht2, *st, 10, '4ms', 0]
+      - [*vht1, *s3, 10, '4ms', 0]
+      - [*vht2, *s3, 10, '4ms', 0]
       - [*s21, *vh2, 10, '0ms', 0]
       - [*in, *s1, 1000, '1ms', 0]
       - [*s1, *ctap1, 1000, '1ms', 0]

@@ -73,7 +73,7 @@ hosts:
       - &ctap1
         <<: *ctapudp-server
         vhost: *vh1
-        ip: *vh21ip
+        ip: 10.22.22.2
         ip2: *vh22ip
         port: &n2-ctap-port 1000
         name: ct1
@@ -88,7 +88,7 @@ hosts:
         vhost: *vh2
         device: tap1
         name: ct2
-        ip: *vh11ip
+        ip: 10.22.22.1
         ip2: *vh12ip
         port: *n1-ctap-port
         bind_ip: 0.0.0.0
@@ -96,6 +96,23 @@ hosts:
         kw_ip: 127.0.0.1
         kw_port: *kw2_port
         management_port: 11111
+      - &tuny1
+        <<: *tiny-server
+        vhost: *vh1
+        device: tiny1
+        name: tt1
+        bind_ip: 0.0.0.0
+        subnet: 10.22.22.0
+        bind_port: &t1-tiny-port 4096
+      - &tiny2
+        <<: *tiny-client
+        vhost: *vh2
+        device: tiny2
+        name: tt2
+        bind_port: *t1-tiny-port
+        subnet: 10.22.22.0
+        bind_ip: *vh11ip
+
     post-scripts: 
       - &httpd-out
         <<: *httpd

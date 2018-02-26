@@ -25,14 +25,6 @@ hosts:
         <<: *switch
         name: s12
         controller: *c0
-      - &s21
-        <<: *switch
-        name: s21
-        controller: *c0
-      - &s3
-        <<: *switch
-        name: s3
-        controller: *c0
 
     vhosts:
       - &in
@@ -54,22 +46,16 @@ hosts:
         <<: *vhost
         name: vh1
         ip: &vh11ip 10.0.1.1
+        sw2: *s12
+        ip2: &vh12ip 10.0.2.1
         mac: 00:00:00:00:00:03
       - &vh2
         <<: *vhost
         name: vh2
         ip: &vh21ip 10.0.1.2
+        sw2: *s12
+        ip2: &vh22ip 10.0.2.2
         mac: 00:00:00:00:00:04
-      - &vht1
-        <<: *vhost
-        name: vht1
-        ip: &vht1ip 10.22.0.1
-        mac: 00:00:00:00:00:06
-      - &vht2
-        <<: *vhost
-        name: vht2
-        ip: &vht2ip 10.22.0.2
-        mac: 00:00:00:00:00:07
 
     pre-scripts:
       - &kw1
@@ -87,7 +73,8 @@ hosts:
       - &ctap1
         <<: *ctapudp-server
         vhost: *vh1
-        ip: *vh21ip
+        ip: 10.22.22.2
+        ip2: *vh22ip
         port: &n2-ctap-port 1000
         name: ct1
         device: tap0
@@ -101,7 +88,8 @@ hosts:
         vhost: *vh2
         device: tap1
         name: ct2
-        ip: *vh11ip
+        ip: 10.22.22.1
+        ip2: *vh12ip
         port: *n1-ctap-port
         bind_ip: 0.0.0.0
         bind_port: *n2-ctap-port
@@ -110,22 +98,21 @@ hosts:
         management_port: 11111
       - &tuny1
         <<: *tiny-server
-        vhost: *vht1
+        vhost: *vh1
         device: tiny1
         name: tt1
-        ip: *vht1ip
         bind_ip: 0.0.0.0
         subnet: 10.22.22.0
         bind_port: &t1-tiny-port 4096
       - &tiny2
         <<: *tiny-client
-        vhost: *vht2
+        vhost: *vh2
         device: tiny2
         name: tt2
-        ip: *vht2ip
         bind_port: *t1-tiny-port
         subnet: 10.22.22.0
-        bind_ip: *vht1ip
+        bind_ip: *vh11ip
+
     post-scripts: 
       - &httpd-out
         <<: *httpd
@@ -138,13 +125,9 @@ hosts:
     links:
       - [*vhwrong, *s11, 100, '0ms', 0]
       - [*vh1, *s11, 10, '4ms', 0]
-      - [*vht1, *s3, 10, '4ms', 0]
-      - [*vht2, *s3, 10, '4ms', 0]
-      - [*s21, *vh2, 10, '0ms', 0]
+      - [*s11, *vh2, 10, '0ms', 0]
       - [*in, *s1, 1000, '1ms', 0]
       - [*s1, *ctap1, 1000, '1ms', 0]
       - [*ctap2, *s2, 1000, '1ms', 0]
-      - [*s11, *vht1, 1000, '1ms', 0]
-      - [*vht2, *s21, 1000, '1ms', 0]
       - [*s2, *out, 1000, '1ms', 0]
  

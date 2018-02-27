@@ -167,6 +167,17 @@ defaults:
       cmdline: cd {path}; python /root/qnet/mininet-qnet/run_daemon.py start {name} python -m  SimpleHTTPServer {port}
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
 
+    - &mirror
+      <<: *service
+      name: mirror
+      type: service
+      path: None
+      vhost: None
+      prio: 50
+      port: None
+      cmdline: ovs-vsctl -- --id=@p get port s11-eth1 -- --id=@m create mirror name=m0 select-all=true output-port=@p -- set bridge s11 mirrors=@m
+      killcmd: echo ""
+
     - &sshd
       name: sshd
       switch: None

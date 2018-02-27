@@ -40,7 +40,6 @@ hosts:
       - &vhwrong
         <<: *vhost
         name: vhwrong
-        ip: &vhwrong11ip 10.0.1.3
         mac: 00:00:00:00:00:05
       - &vh1
         <<: *vhost
@@ -74,7 +73,6 @@ hosts:
         <<: *ctapudp-server
         vhost: *vh1
         ip: *vh21ip
-        ip2: *vh22ip
         port: &n2-ctap-port 1000
         name: ct1
         device: tap0
@@ -88,8 +86,7 @@ hosts:
         vhost: *vh2
         device: tap1
         name: ct2
-        ip: *vhwrong11ip
-        ip2: *vh12ip
+        ip: *vh11ip
         port: *n1-ctap-port
         bind_ip: 0.0.0.0
         bind_port: *n2-ctap-port
@@ -103,6 +100,9 @@ hosts:
         path: /root/qnet/mininet-qnet-tap/data
         vhost: *out
         port: 8000
+      - &make-mirror
+        <<: *mirror
+        name: make-mirror
 
 
     links:

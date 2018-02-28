@@ -48,6 +48,7 @@ yes|rm data/test_rand.dat
 echo "" | tee -a $filename
 
 echo "Тестирование кодирования данных (ИТП4-е)" | tee -a $filename
+echo "grep polkitd:x:997:995 packets.pcap" >> $filename
 grep polkitd:x:997:995 data/test.dat | tee -a $filename
 echo "Перехват пакетов без кодирования" | tee -a $filename
 (echo " vhwrong tcpdump -i vhwrong-eth0 udp -w packets.pcap & "; sleep 1; echo " in curl -o /dev/null http://10.0.0.2:8000/test.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1_raw.yaml single-host-udp-wrong.yaml h1 2>&1 | tee -a $filename

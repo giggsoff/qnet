@@ -4,6 +4,12 @@ filename="results/result_$now.log"
 echo "Время проведения теста: $(date)" | tee -a $filename
 echo "Сохранено в файл $filename"
 
+echo "Тестирование коэффициента использования канала (ИТП4-а)" | tee -a $filename
+dd if=/dev/urandom of=data/test_rand.dat  bs=10M  count=2
+(echo " in ping out -c 5 "; echo " iperf in out "; echo " in curl -o /dev/null http://10.0.0.2:8000/test_rand.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp.yaml h1 2>&1 | tee -a $filename
+yes|rm data/test_rand.dat
+echo "" | tee -a $filename
+
 echo "Тестирование параллельных каналов передачи (ИТП4-б)" | tee -a $filename
 echo "С использованием одного канала" | tee -a $filename
 (echo " out iperf3 -s & "; sleep 2; echo " in iperf3 -c out "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp.yaml h1 2>&1 | tee -a $filename

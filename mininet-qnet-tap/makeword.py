@@ -3,16 +3,40 @@
 from docx import Document
 import os
 import sys
+from argparse import ArgumentParser
+from docx.enum.style import WD_STYLE_TYPE
+from docx.shared import Pt
 
+def process(document, line, style, fontname, codestyle):
+    if style==-1:
+        paragraph = document.add_paragraph().add_run(unicode(line, "utf-8"), style=codestyle)
+    else:
+        document.add_heading(unicode(line, "utf-8"), style)
 
-def process(document, line):
-    document.add_paragraph(unicode(line, "utf-8"))
+parser = ArgumentParser()
 
+parser.add_argument('-f', '--file', default='result.docx', help='file to save')
+parser.add_argument('-s', '--style', default=-1, type=int, help='is heading')
+parser.add_argument('-n', '--fontname', default='Calibri', help='font to use')
+parser.add_argument('-c', '--codestyle', default='CodeStyle', help='is code')
+args = parser.parse_args()
 
-filename = 'demo.docx'
+filename = args.file
+style = args.style
+fontname = args.fontname
+codestyle = args.codestyle
 
 if not os.path.exists(filename):
     document = Document()
+    obj_styles = document.styles
+    obj_charstyle = obj_styles.add_style('CodeStyle', WD_STYLE_TYPE.CHARACTER)
+    obj_font = obj_charstyle.font
+    obj_font.size = Pt(10)
+    obj_font.name = 'Courier New'
+    obj_charstyle = obj_styles.add_style('TextStyle', WD_STYLE_TYPE.CHARACTER)
+    obj_font = obj_charstyle.font
+    obj_font.size = Pt(12)
+    obj_font.name = 'Times New Roman'
 else:
     document = Document(filename)
 
@@ -20,7 +44,7 @@ while True:
     line = sys.stdin.readline()
     if not line:
         break
-    process(document, line.rstrip())
+    process(document, line.rstrip(), style, fontname, codestyle)
 """
 document.add_heading('Document Title', 1)
 

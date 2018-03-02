@@ -7,10 +7,17 @@ echo "Время проведения теста: $(date)" | python makeword.py 
 echo "Сохранено в файл $filenamedocx"
 echo "Тестирование коэффициента использования канала (ИТП4-а)"
 echo "Тестирование коэффициента использования канала (ИТП4-а)" | python makeword.py -s 3 -f $filenamedocx
-echo 'dd if=/dev/urandom of=data/test_rand.dat  bs=10M  count=2' | python makeword.py -c CodeStyle -f $filenamedocx
-dd if=/dev/urandom of=data/test_rand.dat  bs=10M  count=2 | python makeword.py -c CodeStyle -f $filenamedocx
+echo 'dd if=/dev/urandom of=data/test_rand.dat  bs=10M  count=4' | python makeword.py -c CodeStyle -f $filenamedocx
+dd if=/dev/urandom of=data/test_rand.dat  bs=10M  count=4 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx
 echo '(echo " in ping out -c 5 "; echo " iperf in out "; echo " in curl -o /dev/null http://10.0.0.2:8000/test_rand.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx' | python makeword.py -c CodeStyle -f $filenamedocx
-(echo " in ping out -c 5 "; echo " iperf in out "; echo " in curl -o /dev/null http://10.0.0.2:8000/test_rand.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx
+(echo " in ping out -c 5 "; echo " iperf in out "; echo " in curl -o /dev/null http://10.0.0.2:8000/test_rand.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx -t 1 | tee $filename
+bw=`cat single-host-udp.yaml | grep "\[*vh1," | awk -F\, '{print $(NF-2)}' | bc`
+speed=`grep "*** Results:" $filename | awk -F\' '{print $(NF-3)}' | cut -d' ' -f1`
+echo "Коэффициент использования канала согласно iperf: `echo "$speed*(100/$bw)"|bc`%" | python makeword.py -c TextStyle -f $filenamedocx
+VALUE=`grep "100 " $filename | awk -F' ' '{print $(NF)}'`
+for i in "g G m M k K"; do         VALUE=${VALUE//[gG]/*1024m};         VALUE=${VALUE//[mM]/*1024k};         VALUE=${VALUE//[kK]/*1024}; done
+speed=`echo "$VALUE*8" | tr -d '\r' | bc`
+echo "Коэффициент использования канала согласно curl: `echo "($speed*100/($bw*1024*1024))"|bc`%" | python makeword.py -c TextStyle -f $filenamedocx
 yes|rm data/test_rand.dat
 echo "" | python makeword.py -c TextStyle -f $filenamedocx
 echo "Тестирование параллельных каналов передачи (ИТП4-б)"
@@ -65,19 +72,19 @@ yes|rm data/test_rand.dat
 echo "" | python makeword.py -c TextStyle -f $filenamedocx
 echo "Тестирование кодирования данных (ИТП4-е)"
 echo "Тестирование кодирования данных (ИТП4-е)" | python makeword.py -s 3 -f $filenamedocx
-echo "grep polkitd data/test.dat" | python makeword.py -c CodeStyle -f $filenamedocx
-grep polkitd data/test.dat | python makeword.py -c CodeStyle -f $filenamedocx
+echo "strings data/test.dat | grep polkitd" | python makeword.py -c CodeStyle -f $filenamedocx
+strings data/test.dat | grep polkitd | python makeword.py -c CodeStyle -f $filenamedocx
 echo "Перехват пакетов без кодирования" | python makeword.py -s 4 -f $filenamedocx
 echo '(echo " vhwrong tcpdump -i vhwrong-eth0 udp -w packets.pcap & "; sleep 4; echo " in curl -o /dev/null http://10.0.0.2:8000/test.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1_raw.yaml single-host-udp-wrong.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx' | python makeword.py -c CodeStyle -f $filenamedocx
 (echo " vhwrong tcpdump -i vhwrong-eth0 udp -w packets.pcap & "; sleep 4; echo " in curl -o /dev/null http://10.0.0.2:8000/test.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1_raw.yaml single-host-udp-wrong.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx
-echo "grep polkitd packets.pcap" | python makeword.py -c CodeStyle -f $filenamedocx
-grep polkitd packets.pcap | python makeword.py -c CodeStyle -f $filenamedocx
+echo "strings packets.pcap | grep polkitd" | python makeword.py -c CodeStyle -f $filenamedocx
+strings packets.pcap | grep polkitd | python makeword.py -c CodeStyle -f $filenamedocx
 yes|rm packets.pcap
 echo "Перехват пакетов с кодированием" | python makeword.py -s 4 -f $filenamedocx
 echo '(echo " vhwrong tcpdump -i vhwrong-eth0 udp -w packets.pcap & "; sleep 4; echo " in curl -o /dev/null http://10.0.0.2:8000/test.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp-wrong.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx' | python makeword.py -c CodeStyle -f $filenamedocx
 (echo " vhwrong tcpdump -i vhwrong-eth0 udp -w packets.pcap & "; sleep 4; echo " in curl -o /dev/null http://10.0.0.2:8000/test.dat "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp-wrong.yaml h1 2>&1 | python makeword.py -c CodeStyle -f $filenamedocx
-echo "grep polkitd packets.pcap" | python makeword.py -c CodeStyle -f $filenamedocx
-grep polkitd packets.pcap | python makeword.py -c CodeStyle -f $filenamedocx
+echo "strings packets.pcap | grep polkitd" | python makeword.py -c CodeStyle -f $filenamedocx
+strings packets.pcap | grep polkitd | python makeword.py -c CodeStyle -f $filenamedocx
 yes|rm packets.pcap
 
 echo "Сохранено в файл $filenamedocx"

@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 from docx.enum.style import WD_STYLE_TYPE
 from docx.shared import Pt
 
-def process(document, line, style, fontname, codestyle):
+def process(document, line, style, codestyle):
     if style==-1:
         paragraph = document.add_paragraph().add_run(unicode(line, "utf-8"), style=codestyle)
     else:
@@ -17,13 +17,13 @@ parser = ArgumentParser()
 
 parser.add_argument('-f', '--file', default='result.docx', help='file to save')
 parser.add_argument('-s', '--style', default=-1, type=int, help='is heading')
-parser.add_argument('-n', '--fontname', default='Calibri', help='font to use')
+parser.add_argument('-t', '--translate', default='0', type=int, help='translate to stdout')
 parser.add_argument('-c', '--codestyle', default='CodeStyle', help='is code')
 args = parser.parse_args()
 
 filename = args.file
 style = args.style
-fontname = args.fontname
+translate = args.translate
 codestyle = args.codestyle
 
 if not os.path.exists(filename):
@@ -44,7 +44,9 @@ while True:
     line = sys.stdin.readline()
     if not line:
         break
-    process(document, line.rstrip(), style, fontname, codestyle)
+    if translate:
+        print(unicode(line, "utf-8").rstrip('\n'))
+    process(document, line.rstrip(), style, codestyle)
 """
 document.add_heading('Document Title', 1)
 

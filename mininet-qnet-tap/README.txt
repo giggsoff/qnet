@@ -1,6 +1,6 @@
 mininet with tap tunnels
 
-requirements: pyyaml, mininet, python-daemon
+requirements: pyyaml, mininet, python-daemon, libcgroup-tools
 
 to run mininet code:
 

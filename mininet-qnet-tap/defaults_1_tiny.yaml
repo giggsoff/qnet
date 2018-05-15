@@ -127,7 +127,7 @@ defaults:
       key_reuse: 1000
       vhost: None
       subnet: None
-      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/tinyvpn/tinyvpn_amd64 -s -l{bind_ip}:{bind_port} -f20:10 --sub-net {subnet}
+      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/tinyvpn/tinyvpn_amd64 -s -l{bind_ip}:{bind_port} -f10:6 --sub-net {subnet}
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
 
     - &tiny-client
@@ -143,7 +143,7 @@ defaults:
       management_port: None
       vhost: None
       subnet: None
-      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/tinyvpn/tinyvpn_amd64 -c -r{bind_ip}:{bind_port} -f20:10 --sub-net {subnet} 
+      cmdline: python /root/qnet/mininet-qnet/run_daemon.py start {name} /root/qnet/src/tinyvpn/tinyvpn_amd64 -c -r{bind_ip}:{bind_port} -f10:6 --sub-net {subnet} 
       killcmd: python /root/qnet/mininet-qnet/run_daemon.py stop {name}
 
     - &ctapudpraw-server

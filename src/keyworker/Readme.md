@@ -5,4 +5,5 @@
 
 http post -> функционал
 
- 
+Для сборки Ubuntu 16.04:
+sudo apt install libdb-dev libmicrohttpd-dev libssl-dev

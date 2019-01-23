@@ -5,7 +5,7 @@ src/ctapraw/ctapraw
 src/ctapudp/ctapudp
 src/keyworker/*.db
 src/keyworker/keyworker
-
+tests
 # Backup files
 *~
 .~lock*

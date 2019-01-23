@@ -4,6 +4,8 @@ UDP-версия
 
 Для сборки нужны пакеты openssl-devel, libcurl-devel, libmcrypt-devel
 
+Ubuntu 16.04:
+sudo apt install libcurl4-openssl-dev libssl-dev
 
 Сборка
 ======

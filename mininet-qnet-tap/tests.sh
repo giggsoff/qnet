@@ -16,9 +16,9 @@ echo "С использованием двух каналов" | tee -a $filenam
 
 echo "Тестирование помехозащищенного кодирования (ИТП4-в)" | tee -a $filename
 echo "Без применения кодов Рида-Соломона на канале с потерей пакетов 10%" | tee -a $filename
-(sleep 2; echo " out iperf3 -s & "; sleep 5; echo " in iperf3 -c out -u -b3M "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp-loss.yaml h1 2>&1 | tee -a $filename
+(sleep 5; echo " out iperf3 -s & "; sleep 5; echo " in iperf3 -c out -u -b3M "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1.yaml single-host-udp-loss.yaml h1 2>&1 | tee -a $filename
 echo "С применением кодов Рида-Соломона на канале с потерей пакетов 10%" | tee -a $filename
-(sleep 2; echo " out iperf3 -s & "; sleep 5; echo " in iperf3 -c out -u -b3M "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1_tiny.yaml single-host-udp-tiny-loss.yaml h1 2>&1 | tee -a $filename
+(sleep 5; echo " out iperf3 -s & "; sleep 5; echo " in iperf3 -c out -u -b3M "; sleep 1; echo " quit "; sleep 2) | stdbuf -o0 -e0 python mininet-qnet-tap.py defaults_1_tiny.yaml single-host-udp-tiny-loss.yaml h1 2>&1 | tee -a $filename
 
 echo "Тестирование уплотнения данных (ИТП4-г)" | tee -a $filename
 dd if=/dev/urandom of=data/test_rand.dat  bs=10M  count=2

@@ -4,7 +4,7 @@ from mininet.link import TCLink
 import traceback
 from mininet_common import sshd, checkIntf
 from mininet.log import setLogLevel, info
-from mininet.node import RemoteController, OVSSwitch, Controller
+from mininet.node import RemoteController, OVSSwitch, Controller, Ryu
 from mininet.net import Mininet
 from mininet.link import Intf
 from mininet.cli import CLI
@@ -48,7 +48,7 @@ try:
         controller_name = c['name']
         print 'Creating controller:', controller_name
         if controller_ip == 'None':
-            c0 = Controller( controller_name, port=controller_port)
+            c0 = Ryu( controller_name, port=controller_port)
             controllers_to_add.append(c0)
         else:
             c0 = RemoteController( controller_name, ip=controller_ip, port=controller_port )
